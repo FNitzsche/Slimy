@@ -23,15 +23,15 @@ public class SlimeManager {
     Mat img;
 
     AgentManager agentManager;
-    //ClusterManager clusterManager;
+    ClusterManager clusterManager;
 
     public void initialize(Image image){
         startImage = image;
-        img = new Mat((int)startImage.getWidth(), (int)startImage.getHeight(), CvType.CV_8UC4);
+        img = new Mat(AppStart.rX, AppStart.rY, CvType.CV_8UC4, new Scalar(0, 0, 0, 255));
 
-        //Cluster
+        clusterManager.createClusters(startImage, 3, 5, 10);
 
-        trails = new float[AppStart.rX][AppStart.rY][1];
+        trails = new float[AppStart.rX][AppStart.rY][clusterManager.clusters.length];
 
         agentManager.initializeAgents(startImage);
 
@@ -40,7 +40,7 @@ public class SlimeManager {
     public void paintTrails(Canvas canvas){
 
 
-        float[][][] nTrails = new float[AppStart.rX][AppStart.rY][1];
+        float[][][] nTrails = new float[AppStart.rX][AppStart.rY][clusterManager.clusters.length];
         for (int i = 1; i < AppStart.rX-1; i++){
             for (int j = 1; j < AppStart.rY-1; j++){
                 for (int cl = 0; cl < nTrails[i][j].length; cl++) {
@@ -51,7 +51,7 @@ public class SlimeManager {
                         }
                     }
                     tmp /= 9;
-                    nTrails[i][j][cl] = (float) Math.max(0, tmp-0.02);
+                    nTrails[i][j][cl] = tmp*0.95f;
                 }
             }
         }
@@ -60,7 +60,7 @@ public class SlimeManager {
 
         agentManager.agents.stream().parallel().filter(agent -> agent[0] >= 0 && agent[0] <= AppStart.rX-1 && agent[1] >= 0 && agent[1] <= AppStart.rY-1)
                 .forEach(agent -> {
-                    trails[(int) agent[0]][(int) agent[1]][(int) agent[4]] = 1;
+                    trails[(int) agent[0]][(int) agent[1]][(int) agent[4]] = (float) Math.min(trails[(int) agent[0]][(int) agent[1]][(int) agent[4]]+0.1, 1);
                 });
 
         Runnable run = new Runnable() {
@@ -70,7 +70,7 @@ public class SlimeManager {
                 Core.multiply(img, new Scalar(AppStart.sustain, AppStart.sustain, AppStart.sustain, 1), img);
                 agentManager.agents.stream().parallel().filter(agent -> agent[0] >= 0 && agent[0] <= AppStart.rX-1 && agent[1] >= 0 && agent[1] <= AppStart.rY-1)
                         .forEach(agent -> {
-                            Imgproc.circle(img, new Point(agent[0], agent[1]), 0, new Scalar(agent[5], agent[6], agent[7], 100), 1);
+                            Imgproc.circle(img, new Point(agent[0], agent[1]), 0, new Scalar(agent[5]*255, agent[6]*255, agent[7]*255, 100), 1);
                         });
                 Image image = mat2Image(img);
                 Platform.runLater(() -> canvas.getGraphicsContext2D().drawImage(image, 0, 0));

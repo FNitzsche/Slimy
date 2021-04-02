@@ -29,7 +29,7 @@ public class AppStart extends Application {
     static {System.loadLibrary(Core.NATIVE_LIBRARY_NAME);}
 
     static final double angle = Math.PI/5;
-    static final float turnFactor = 1f;
+    static final float turnFactor = 0.2f;
 
     static  float checkDistance = 20;
 
@@ -48,7 +48,7 @@ public class AppStart extends Application {
 
     int maxSaveFrames = 600;
 
-    Image img = new Image("file:\\G:\\Medien\\MyProgrammBilder\\DSC_2921Two_Bearbeitet.png", 500, 500, false, true);
+    Image img = new Image("file:\\G:\\Medien\\MyProgrammBilder\\RoseCut.png", 720, 720, false, true);
 
     Canvas canvas = new Canvas(rX, rY);
 
@@ -57,16 +57,12 @@ public class AppStart extends Application {
         stage.setScene(new Scene(new HBox(canvas)));
         stage.show();
 
-        /*canvas.setOnMouseDragged(e -> {
-            if (e.isPrimaryButtonDown()){
-                Imgproc.circle(trails, new Point(e.getX(), e.getY()), 3, Scalar.all(255), -1);
-            }
-        });*/
-
         SlimeManager sm = new SlimeManager();
         AgentManager am = new AgentManager();
+        ClusterManager cm = new ClusterManager();
         sm.agentManager = am;
         am.slimeManager = sm;
+        sm.clusterManager = cm;
         sm.initialize(img);
 
         //sm.paintTrails(canvas);
@@ -83,10 +79,11 @@ public class AppStart extends Application {
                 s = System.currentTimeMillis();
                 sm.paintTrails(canvas);
                 System.out.println("RenderTime = " + (System.currentTimeMillis()-s) + "ms");
+                //checkDistance+=0.02;
             }
         };
         ScheduledExecutorService exe = Executors.newSingleThreadScheduledExecutor();
-        exe.scheduleWithFixedDelay(run, 100, 30, TimeUnit.MILLISECONDS);
+        exe.scheduleWithFixedDelay(run, 100, 50, TimeUnit.MILLISECONDS);
 
     }
 

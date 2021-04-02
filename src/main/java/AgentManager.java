@@ -21,6 +21,19 @@ public class AgentManager {
                 float dy = rnd.nextFloat()-0.5f;
 
                 float cluster = 0;
+                float dist = (float) Math.sqrt(Math.pow(img.getPixelReader().getColor(i, j).getRed()-slimeManager.clusterManager.clusters[0][0], 2)
+                        + Math.pow(img.getPixelReader().getColor(i, j).getGreen()-slimeManager.clusterManager.clusters[0][1], 2)
+                        + Math.pow(img.getPixelReader().getColor(i, j).getBlue()-slimeManager.clusterManager.clusters[0][2], 2));
+
+                for (int c = 0; c < slimeManager.clusterManager.clusters.length; c++){
+                    float tmp = (float) Math.sqrt(Math.pow(img.getPixelReader().getColor(i, j).getRed()-slimeManager.clusterManager.clusters[c][0], 2)
+                            + Math.pow(img.getPixelReader().getColor(i, j).getGreen()-slimeManager.clusterManager.clusters[c][1], 2)
+                            + Math.pow(img.getPixelReader().getColor(i, j).getBlue()-slimeManager.clusterManager.clusters[c][2], 2));
+                    if (tmp < dist){
+                        dist = tmp;
+                        cluster = c;
+                    }
+                }
 
                 float norm = (float)Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
@@ -90,16 +103,12 @@ public class AgentManager {
 
 
         if ((pos[0] >= 0 && pos[0] <= AppStart.rX-1) && (pos[1] >= 0 && pos[1] <= AppStart.rY-1)) {
-            float[] c = null;
-            if (slimeManager == null){
-                throw new NullPointerException();
-            }
-             c = slimeManager.trails[(int)pos[0]][(int)pos[1]];
+            float[] c = slimeManager.trails[(int)pos[0]][(int)pos[1]];
             for (int i = 0; i < c.length; i++){
                 if (i == agent[4]){
                     p1 += c[i];
                 } else {
-                    p1 -= c[i];
+                    p1 -= c[i]*0.3;
                 }
             }
         }
@@ -107,9 +116,9 @@ public class AgentManager {
             float[] c = slimeManager.trails[(int)posleft[0]][(int)posleft[1]];
             for (int i = 0; i < c.length; i++){
                 if (i == agent[4]){
-                    p1 += c[i];
+                    p2 += c[i];
                 } else {
-                    p1 -= c[i];
+                    p2 -= c[i]*0.3;
                 }
             }
         }
@@ -117,24 +126,24 @@ public class AgentManager {
             float[] c = slimeManager.trails[(int)posright[0]][(int)posright[1]];
             for (int i = 0; i < c.length; i++){
                 if (i == agent[4]){
-                    p1 += c[i];
+                    p3 += c[i];
                 } else {
-                    p1 -= c[i];
+                    p3 -= c[i]*0.3;
                 }
             }
         }
 
-        if (p1 <= p2 && p1 <= p3){
+        if (p1 >= p2 && p1 >= p3){
             agent[0] = agent[0]+agent[2]*2;
             agent[1] = agent[1]+agent[3]*2;
             followed = true;
-        } else if (p2 <= p1 && p2 <= p3){
+        } else if (p2 >= p1 && p2 >= p3){
             agent[0] = agent[0]+leftTurn[0]*2;
             agent[1] = agent[1]+leftTurn[1]*2;
             agent[2] = leftTurn[0];
             agent[3] = leftTurn[1];
             followed = true;
-        } else if (p3 <= p2 && p3 <= p1){
+        } else if (p3 >= p2 && p3 >= p1){
             agent[0] = agent[0]+rightTurn[0]*2;
             agent[1] = agent[1]+rightTurn[1]*2;
             agent[2] = rightTurn[0];
