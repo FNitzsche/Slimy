@@ -1,4 +1,5 @@
 import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
@@ -7,8 +8,13 @@ import javafx.scene.image.WritablePixelFormat;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.videoio.VideoWriter;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,7 +35,7 @@ public class SlimeManager {
         startImage = image;
         img = new Mat(AppStart.rX, AppStart.rY, CvType.CV_8UC4, new Scalar(0, 0, 0, 255));
 
-        clusterManager.createClusters(startImage, 3, 5, 10);
+        clusterManager.createClusters(startImage, 5, 5, 10);
 
         trails = new float[AppStart.rX][AppStart.rY][clusterManager.clusters.length];
 
@@ -37,7 +43,7 @@ public class SlimeManager {
 
     }
 
-    public void paintTrails(Canvas canvas){
+    public void paintTrails(Canvas canvas, VideoWriter videoWriter){
 
 
         float[][][] nTrails = new float[AppStart.rX][AppStart.rY][clusterManager.clusters.length];
@@ -72,7 +78,13 @@ public class SlimeManager {
                         .forEach(agent -> {
                             Imgproc.circle(img, new Point(agent[0], agent[1]), 0, new Scalar(agent[5]*255, agent[6]*255, agent[7]*255, 100), 1);
                         });
+                Imgproc.medianBlur(img, img, 3);
                 Image image = mat2Image(img);
+                if (videoWriter != null){
+                    videoWriter.write(img);
+                } else {
+                    saveToFile(image);
+                }
                 Platform.runLater(() -> canvas.getGraphicsContext2D().drawImage(image, 0, 0));
 
             }
@@ -103,6 +115,18 @@ public class SlimeManager {
         // build and return an Image created from the image encoded in the
         // buffer
         return new WritableImage(new Image(new ByteArrayInputStream(buffer.toArray())).getPixelReader(), src.width(), src.height());
+    }
+
+    int count = 0;
+
+    public void saveToFile(Image image) {
+        File outputFile = new File(".\\imgs2\\test1_" + count++ + ".png");
+        BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
+        try {
+            ImageIO.write(bImage, "png", outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

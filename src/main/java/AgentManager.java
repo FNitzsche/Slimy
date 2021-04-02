@@ -48,9 +48,9 @@ public class AgentManager {
 
 
     public void moveAgents(){
-        System.out.println("a move");
+        //System.out.println("a move");
         agents.parallelStream().forEach(this::moveOneAgent);
-        System.out.println("a move finished");
+        //System.out.println("a move finished");
     }
 
     public void moveOneAgent(float[] agent){

@@ -48,12 +48,21 @@ public class AppStart extends Application {
 
     int maxSaveFrames = 600;
 
-    Image img = new Image("file:\\G:\\Medien\\MyProgrammBilder\\RoseCut.png", 720, 720, false, true);
+    Image img = new Image("file:\\C:\\Users\\felix\\IdeaProjects\\Slimy\\P1030232_v1 (2).png", 720, 720, false, true);
 
     Canvas canvas = new Canvas(rX, rY);
 
     @Override
     public void start(Stage stage) throws Exception {
+        //String p = ".\\" + "testVid2.avi";
+        //VideoWriter videoWriter = new VideoWriter(p, VideoWriter.fourcc('M', 'J','P','G'), 25, new Size(img.getWidth(), img.getHeight()));
+        ScheduledExecutorService exe = Executors.newSingleThreadScheduledExecutor();
+
+        stage.setOnCloseRequest(e -> {
+            exe.shutdown();
+            //videoWriter.release();
+        });
+
         stage.setScene(new Scene(new HBox(canvas)));
         stage.show();
 
@@ -67,22 +76,19 @@ public class AppStart extends Application {
 
         //sm.paintTrails(canvas);
 
-        sm.agentManager.moveAgents();
-
-        sm.paintTrails(canvas);
+        sm.paintTrails(canvas, null);
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 long s = System.currentTimeMillis();
                 sm.agentManager.moveAgents();
-                System.out.println("UpdateTime = " + (System.currentTimeMillis()-s) + "ms");
+                //System.out.println("UpdateTime = " + (System.currentTimeMillis()-s) + "ms");
                 s = System.currentTimeMillis();
-                sm.paintTrails(canvas);
-                System.out.println("RenderTime = " + (System.currentTimeMillis()-s) + "ms");
+                sm.paintTrails(canvas, null);
+                //System.out.println("RenderTime = " + (System.currentTimeMillis()-s) + "ms");
                 //checkDistance+=0.02;
             }
         };
-        ScheduledExecutorService exe = Executors.newSingleThreadScheduledExecutor();
         exe.scheduleWithFixedDelay(run, 100, 50, TimeUnit.MILLISECONDS);
 
     }
