@@ -35,7 +35,9 @@ public class AgentManager {
 
 
     public void moveAgents(){
-        agents.parallelStream().forEach(agent -> moveOneAgent(agent));
+        System.out.println("a move");
+        agents.parallelStream().forEach(this::moveOneAgent);
+        System.out.println("a move finished");
     }
 
     public void moveOneAgent(float[] agent){
@@ -84,8 +86,15 @@ public class AgentManager {
 
         boolean followed = false;
 
+        //System.out.println("poses");
+
+
         if ((pos[0] >= 0 && pos[0] <= AppStart.rX-1) && (pos[1] >= 0 && pos[1] <= AppStart.rY-1)) {
-            float[] c = slimeManager.trails[(int)pos[0]][(int)pos[1]];
+            float[] c = null;
+            if (slimeManager == null){
+                throw new NullPointerException();
+            }
+             c = slimeManager.trails[(int)pos[0]][(int)pos[1]];
             for (int i = 0; i < c.length; i++){
                 if (i == agent[4]){
                     p1 += c[i];
