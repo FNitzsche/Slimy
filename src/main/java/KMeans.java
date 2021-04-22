@@ -54,7 +54,7 @@ public class KMeans {
                     float minDist = 1000;
                     for (int k = 0; k < n; k++){
                         float dist = 5;
-                            dist = featureDistance(pixel[x][y], (x/(float)resX), (y/(float)resY), centers[k]);
+                            dist = featureDistance(pixel[x][y], centers[k]);
                         if (dist < minDist){
                             nearest = k;
                             minDist = dist;
@@ -87,7 +87,7 @@ public class KMeans {
         }
     }
 
-    public static float featureDistance(float[] pixel, float x, float y, float[] cluster){
+    public static float featureDistance(float[] pixel, float[] cluster){
         return (float) Math.sqrt(
                   Math.pow(pixel[0]-cluster[0], 2) + Math.pow(pixel[1]-cluster[1], 2) + Math.pow(pixel[2]-cluster[2], 2)
         );

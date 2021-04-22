@@ -1,16 +1,21 @@
+import com.sun.tools.javac.tree.JCTree;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.image.WritablePixelFormat;
+import javafx.scene.paint.Color;
 import org.opencv.core.*;
+import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoWriter;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -24,6 +29,8 @@ public class SlimeManager {
     Image startImage;
     ExecutorService parallelExe = Executors.newCachedThreadPool();
 
+    Image snap = null;
+
     float[][][] trails;
 
     Mat img;
@@ -33,9 +40,9 @@ public class SlimeManager {
 
     public void initialize(Image image){
         startImage = image;
-        img = new Mat(AppStart.rX, AppStart.rY, CvType.CV_8UC4, new Scalar(0, 0, 0, 255));
+        img = new Mat(AppStart.rX, AppStart.rY, CvType.CV_8UC4, new Scalar(0, 0, 0, 0));
 
-        clusterManager.createClusters(startImage, 5, 5, 10);
+        clusterManager.createClusters(startImage, 10, 5, 10);
 
         trails = new float[AppStart.rX][AppStart.rY][clusterManager.clusters.length];
 
@@ -57,7 +64,12 @@ public class SlimeManager {
                         }
                     }
                     tmp /= 9;
-                    nTrails[i][j][cl] = tmp*0.95f;
+                    if (cl == clusterManager.clusterMap[i][j]){
+                        tmp += 0.05;
+                    } else {
+                        tmp *= 0.8f;
+                    }
+                    nTrails[i][j][cl] = tmp*0.9f;
                 }
             }
         }
@@ -66,26 +78,53 @@ public class SlimeManager {
 
         agentManager.agents.stream().parallel().filter(agent -> agent[0] >= 0 && agent[0] <= AppStart.rX-1 && agent[1] >= 0 && agent[1] <= AppStart.rY-1)
                 .forEach(agent -> {
-                    trails[(int) agent[0]][(int) agent[1]][(int) agent[4]] = (float) Math.min(trails[(int) agent[0]][(int) agent[1]][(int) agent[4]]+0.1, 1);
+                    trails[(int) agent[0]][(int) agent[1]][(int) agent[4]] = (float) Math.min(trails[(int) agent[0]][(int) agent[1]][(int) agent[4]]+0.02, 1);
                 });
 
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                Imgproc.blur(img, img, new Size(3, 3));
-                Core.multiply(img, new Scalar(AppStart.sustain, AppStart.sustain, AppStart.sustain, 1), img);
+                //Imgproc.blur(img, img, new Size(3, 3));
+                Core.multiply(img, new Scalar(AppStart.sustain, AppStart.sustain, AppStart.sustain, AppStart.alphaSustain), img);
                 agentManager.agents.stream().parallel().filter(agent -> agent[0] >= 0 && agent[0] <= AppStart.rX-1 && agent[1] >= 0 && agent[1] <= AppStart.rY-1)
                         .forEach(agent -> {
-                            Imgproc.circle(img, new Point(agent[0], agent[1]), 0, new Scalar(agent[5]*255, agent[6]*255, agent[7]*255, 100), 1);
+                            Imgproc.circle(img, new Point(agent[0], agent[1]), 0, new Scalar(agent[5]*255, agent[6]*255, agent[7]*255, 50), 1);
                         });
-                Imgproc.medianBlur(img, img, 3);
+                //Imgproc.medianBlur(img, img, 3);
+
                 Image image = mat2Image(img);
-                if (videoWriter != null){
-                    videoWriter.write(img);
-                } else {
-                    saveToFile(image);
-                }
-                Platform.runLater(() -> canvas.getGraphicsContext2D().drawImage(image, 0, 0));
+
+                /*WritableImage wimg = new WritableImage((int)image.getWidth(), (int)image.getHeight());
+
+                for (int i = 0; i < image.getWidth(); i++){
+                    for (int j = 0; j < image.getHeight(); j++){
+                        Color cA = image.getPixelReader().getColor(i, j);
+                        double aN = 0;//1-cA.getOpacity();
+                        Color c = Color.color(cA.getRed()*cA.getOpacity()+aN, cA.getGreen()*cA.getOpacity()+aN, cA.getBlue()*cA.getOpacity()+aN);
+                        wimg.getPixelWriter().setColor(i, j, c);
+                    }
+                }*/
+
+
+
+                Platform.runLater(() -> {
+                    //canvas.getGraphicsContext2D().
+                    if (snap == null) {
+                        canvas.getGraphicsContext2D().drawImage(AppStart.img, 0, 0);
+                    } else {
+                        canvas.getGraphicsContext2D().drawImage(snap, 0, 0);
+                    }
+                    canvas.getGraphicsContext2D().drawImage(image, 0, 0);
+                    Image wimg = canvas.snapshot(new SnapshotParameters(), new WritableImage((int)image.getWidth(), (int)image.getHeight()));
+                    snap = wimg;
+                    if (videoWriter != null){
+                        Mat tmp = imageToMat(wimg);
+                        Imgproc.cvtColor(tmp, tmp, Imgproc.COLOR_RGBA2BGRA);
+                        videoWriter.write(tmp);
+                    } else {
+                        saveToFile(wimg);
+                    }
+                });
 
             }
         };
@@ -120,7 +159,7 @@ public class SlimeManager {
     int count = 0;
 
     public void saveToFile(Image image) {
-        File outputFile = new File(".\\imgs2\\test1_" + count++ + ".png");
+        File outputFile = new File(".\\imgs3\\dress2_" + count++ + ".png");
         BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
         try {
             ImageIO.write(bImage, "png", outputFile);

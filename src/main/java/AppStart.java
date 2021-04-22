@@ -29,9 +29,11 @@ public class AppStart extends Application {
     static {System.loadLibrary(Core.NATIVE_LIBRARY_NAME);}
 
     static final double angle = Math.PI/5;
-    static final float turnFactor = 0.2f;
+    static final float turnFactor = 0.8f;
 
-    static  float checkDistance = 20;
+    static  float checkDistance = 2f;
+
+    static final float movementSpeed = 0.5f;
 
     static final int rX = 720;
     static final int rY = 720;
@@ -40,7 +42,8 @@ public class AppStart extends Application {
 
     static  float randomness = 0.05f;
 
-    static final float sustain = 0.95f;
+    static final float sustain = 0.9f;
+    static final float alphaSustain = 0.95f;
 
     public ArrayList<Mat> frameBuffer = new ArrayList<>();
 
@@ -48,19 +51,23 @@ public class AppStart extends Application {
 
     int maxSaveFrames = 600;
 
-    Image img = new Image("file:\\C:\\Users\\felix\\IdeaProjects\\Slimy\\P1030232_v1 (2).png", 720, 720, false, true);
+    static Image img = new Image("file:\\C:\\Users\\felix\\IdeaProjects\\Slimy\\P1030232_v1 (2).png", rX, rY, false, true);
+    //static Image img = new Image("file:\\E:\\Download\\DSC_3545.JPG", 720, 720, false, true);
+    //static Image img = new Image("file:\\E:\\Download\\DSC_0555 (2020-10-02T14_48_12.000)Schnitt.jpg", 720, 720, false, true);
+    //static Image img = new Image("file:\\G:\\BendErgebnisse\\flyDress\\flyDress1.png", 720, 720, false, true);
+    //static Image img = new Image("file:\\G:\\Medien\\Fotos\\LumixBearbeitet\\P1030617_v1.png", rX, rY, false, true);
 
     Canvas canvas = new Canvas(rX, rY);
 
     @Override
     public void start(Stage stage) throws Exception {
-        //String p = ".\\" + "testVid2.avi";
-        //VideoWriter videoWriter = new VideoWriter(p, VideoWriter.fourcc('M', 'J','P','G'), 25, new Size(img.getWidth(), img.getHeight()));
+        String p = ".\\" + "testVid16.avi";
+        VideoWriter videoWriter = new VideoWriter(p, VideoWriter.fourcc('M', 'J','P','G'), 25, new Size(img.getWidth(), img.getHeight()));
         ScheduledExecutorService exe = Executors.newSingleThreadScheduledExecutor();
 
         stage.setOnCloseRequest(e -> {
             exe.shutdown();
-            //videoWriter.release();
+            videoWriter.release();
         });
 
         stage.setScene(new Scene(new HBox(canvas)));
@@ -84,7 +91,7 @@ public class AppStart extends Application {
                 sm.agentManager.moveAgents();
                 //System.out.println("UpdateTime = " + (System.currentTimeMillis()-s) + "ms");
                 s = System.currentTimeMillis();
-                sm.paintTrails(canvas, null);
+                sm.paintTrails(canvas, videoWriter);
                 //System.out.println("RenderTime = " + (System.currentTimeMillis()-s) + "ms");
                 //checkDistance+=0.02;
             }
