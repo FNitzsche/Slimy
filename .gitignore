@@ -1,6 +1,7 @@
 testvideo.mp4
+testVid.mp4
+testVid2.mp4
 *.png
-*.mp4
 *.avi
 .gradle/*
 build/*
