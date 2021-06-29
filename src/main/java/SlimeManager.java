@@ -15,7 +15,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoWriter;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -40,7 +39,7 @@ public class SlimeManager {
 
     public void initialize(Image image){
         startImage = image;
-        img = new Mat(AppStart.rX, AppStart.rY, CvType.CV_8UC4, new Scalar(0, 0, 0, 0));
+        img = new Mat(AppStart.rY, AppStart.rX, CvType.CV_8UC4, new Scalar(0, 0, 0, 0));
 
         clusterManager.createClusters(startImage, 10, 5, 10);
 
@@ -108,14 +107,14 @@ public class SlimeManager {
 
 
                 Platform.runLater(() -> {
-                    //canvas.getGraphicsContext2D().
+                    //canvas.getGraphicsContext2D().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                     if (snap == null) {
                         canvas.getGraphicsContext2D().drawImage(AppStart.img, 0, 0);
                     } else {
                         canvas.getGraphicsContext2D().drawImage(snap, 0, 0);
                     }
                     canvas.getGraphicsContext2D().drawImage(image, 0, 0);
-                    Image wimg = canvas.snapshot(new SnapshotParameters(), new WritableImage((int)image.getWidth(), (int)image.getHeight()));
+                    Image wimg = canvas.snapshot(new SnapshotParameters(), new WritableImage(AppStart.rX, AppStart.rY));
                     snap = wimg;
                     if (videoWriter != null){
                         Mat tmp = imageToMat(wimg);

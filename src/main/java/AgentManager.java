@@ -4,6 +4,7 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
@@ -52,6 +53,7 @@ public class AgentManager {
     public void moveAgents(){
         //System.out.println("a move");
         agents.parallelStream().forEach(this::moveOneAgent);
+        //System.out.println(agents.stream().filter(a -> a[0] > 720).collect(Collectors.toList()).size());
         //System.out.println("a move finished");
     }
 

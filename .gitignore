@@ -6,3 +6,4 @@ testVid2.mp4
 .gradle/*
 build/*
 .idea/*
+*.jpg
